@@ -1,0 +1,15 @@
+<% layout('layouts/boilerplate')%>
+    <h1>
+        <%=username%>
+    </h1>
+    <h1>Followers = <%=followers%>
+    </h1>
+    <h1>following = <%=following%>
+    </h1>
+    <h1>Posts = <%=posts%>
+    </h1>
+    <% for(let i=0;i<images.length;i++) {%>
+        <h5>
+            <%=images[i].image_url%>
+        </h5>
+        <% } %>

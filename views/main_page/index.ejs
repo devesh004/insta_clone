@@ -1,0 +1,9 @@
+<% layout('layouts/boilerplate')%>
+<h1>Main Page!</h1>
+<% for(let i=0;i<results.length;i++){ %>
+  <h2>
+    <a href="/user/<%=results[i].user_id%>"><%=results[i].username%></a>
+  </h2>
+  <a href="photo/<%=results[i].photo_id%>/comments">view comments</a>
+  <b> <%=results[i].likes%> Likes </b>
+  <% } %>

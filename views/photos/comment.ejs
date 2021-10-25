@@ -1,0 +1,12 @@
+<% layout('layouts/boilerplate')%>
+    <% for(let i=0;i<comments.length;i++){ %>
+        <h5>]<a href="/user/<%=comments[i].user_id%>">
+                <%=comments[i].username%>
+            </a>
+            <%=comments[i].comment%>
+        </h5>
+        <% } %>
+            <form action="/photo/<%=photo_id%>/comments" method="post">
+                <textarea name="comment" id="" cols="30" rows="2" placeholder="Add a Comment..."></textarea>
+                <button>Post</button>
+            </form>

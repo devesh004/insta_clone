@@ -87,7 +87,6 @@ app.use("/",photoRoutes);
 app.get("/", (req, res) => {
   // req.session.mai = 'devesh'
   // console.log(req.session.mai);
-  res.send(flash())
   res.render("../home");
 });
 // app.get('/login', (req, res) => {
@@ -113,6 +112,15 @@ app.get("/main", (req, res) => {
   });
 });
 
+let q='select username,id from users';
+con.query(q, function (error, results, fields) {
+  if (error) {
+    console.log(error);
+    throw error;
+  }
+  // console.log(results);
+  exports.Userlist=results;
+});
 
 // app.post('/photo/:id/comments', (req, res, next) => {
 

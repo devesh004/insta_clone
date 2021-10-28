@@ -29,16 +29,16 @@ router.post("/signUp", (req, res, next) => {
       return;
     }
     if (results.length > 0) {
-      next(new AppError("Username or email already has been used", 400));
-      return;
+      req.flash('This username or email already has been taken !')
+      res.redirect('/signUp');
     } else if (password !== con_password) {
-      next(new AppError("Passwords don't match"), 400);
-      return;
+      req.flash("Passwords don't match",401);
+      res.redirect('/signUp');
     } else {
       let q =
         "insert into users(user_name,username,phone_no,user_pass,email) values ?";
       const hash_password = await bcrypt.hash(password, 8);
-      console.log(hash_password);
+      // console.log(hash_password);
       var val = [[name, username, phone_no, hash_password, email]];
       con.query(q, [val], (err, results, fields) => {
         if (err) {
@@ -85,32 +85,43 @@ router.post("/login", (req, res,next) => {
 
 router.get("/user/:id", (req, res, next) => {
   const { id } = req.params;
-  let q = `select count(*) as followers from follows where follower_id=${id};
-    select count(*) as following from follows where followee_id=${id};
-    select count(*) as posts from photos where user_id=${id};
-    select username from users where id=${id};
-    select image_url from photos where user_id=${id}`;
+  let q=`select id from users where id=${id}`
   con.query(q, function (err, results, fields) {
+    // console.log(results);
     if (err) {
+      console.log("DEVESH SHAKYA")
       let message = "User Not Found !";
       // res.render('error.ejs', { message })
       next(new AppError(message, 404));
       return;
     }
-    // console.log(results[1][0].following);
-    const followers = results[0][0].followers;
-    const following = results[1][0].following;
-    const posts = results[2][0].posts;
-    const username = results[3][0].username;
-    const images = results[4];
-    // console.log(images);
-    res.render("users/index", {
-      username,
-      followers,
-      following,
-      posts,
-      images,
-    });
+    if(results.length===0){
+      req.flash("User Not Found !",404)
+      res.redirect('/main');
+    }
+    if(results.length>0){
+      let query = `select count(*) as followers from follows where follower_id=${id};
+      select count(*) as following from follows where followee_id=${id};
+      select count(*) as posts from photos where user_id=${id};
+      select username from users where id=${id};
+      select image_url from photos where user_id=${id}`;
+      con.query(query,(err,results,fields)=>{
+      // console.log(results[1][0].following);
+      const followers = results[0][0].followers;
+      const following = results[1][0].following;
+      const posts = results[2][0].posts;
+      const username = results[3][0].username;
+      const images = results[4];
+      // console.log(images);
+      res.render("users/index", {
+        username,
+        followers,
+        following,
+        posts,
+        images,
+      });
+    })
+    }
   });
 });
 

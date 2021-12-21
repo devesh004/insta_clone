@@ -4,12 +4,17 @@
       <img style="height: 30px; width: 30px; margin-bottom: 2px;" src="https://www.seekpng.com/png/detail/1-19750_instagram-white-logo-instagram-logo-png-white-outline.png">
       Instagram
     </a>
+    <% if(currUser){ %>
+      <a class="navbar-brand" href="/logout">Log out</a>
+    <% } else{ %> 
+      <a class="navbar-brand" href="/login">login</a>
+      <a class="navbar-brand" href="/signUp">signUp</a>
+      <% } %> 
     <form class="d-flex" action="signUp"  method="post">
     <div class="search-user hide">
       <div class="search-box">
         <input class="form-control me-2 input d-block" type="search" placeholder="Search" aria-label="Search">
         <img class="close" src="./resources/img/close.svg" alt="" />
-        <!-- <button class="btn btn-outline-success d-block" type="submit">Search</button> -->
       </div>
       <div class="user-list">
         <ul id="list"></ul>

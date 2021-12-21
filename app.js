@@ -4,6 +4,7 @@ if (process.env.NODE_ENV !== "production") {
 const express = require("express");
 const app = express();
 const mysql = require("mysql");
+const methodOverride = require('method-override');
 const ejs = require("ejs");
 const ejsMate = require("ejs-mate");
 const path = require("path");
@@ -12,8 +13,8 @@ const AppError = require("./utils/AppError");
 const session = require("express-session");
 // const faker = require('faker');
 const flash = require("connect-flash");
-const passport = require("passport");
-const LocalStrategy = require("passport-local");
+// const passport = require("passport");
+// const LocalStrategy = require("passport-local");
 
 const userRoutes = require("./routes/userRoutes");
 const photoRoutes=require("./routes/photoRoutes");
@@ -60,6 +61,8 @@ app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 app.use(express.static(path.join(__dirname, "public")));
 app.use(express.urlencoded({ extended: true }));
+app.use(methodOverride('_method'));
+
 app.use(
   session({
     secret: "notagoodsecret",
@@ -74,8 +77,13 @@ app.use(
 );
 app.use(flash());
 
+// app.use(passport.initialize());
+// app.use(passport.session());  // to trace login logout
+
+
 app.use((req,res,next)=>{
-    res.locals.currUser = req.user;
+    res.locals.currUser = req.session.user;
+    // console.log(currUser);
     res.locals.success = req.flash('success');  
     res.locals.error = req.flash('error');
     next();
@@ -87,6 +95,7 @@ app.use("/",photoRoutes);
 app.get("/", (req, res) => {
   // req.session.mai = 'devesh'
   // console.log(req.session.mai);
+  // console.log(currUser);
   res.render("../home");
 });
 // app.get('/login', (req, res) => {
@@ -96,9 +105,8 @@ app.get("/", (req, res) => {
 // })
 
 app.get("/main", (req, res) => {
-  let q = `select image_url,username,photos.user_id,photos.id as photo_id,count(*) as likes from photos 
+  let q = `select image_url,username,photos.user_id,photos.id as photo_id from photos
     join users on users.id=user_id
-    join likes on photo_id=photos.id
     group by photos.id
     order by photos.created_at desc`;
   con.query(q, function (error, results, fields) {
@@ -106,11 +114,22 @@ app.get("/main", (req, res) => {
       console.log(error);
       throw error;
     }
-    // console.log(results);
+    let aq=`select count(*) as likes from photos
+    join likes on photos.id=photo_id group by photos.id 
+    order by photos.created_at desc`;
+    con.query(aq,function(err,totalLikes,fields){
+         if(err){
+           console.log(err);
+           throw error;
+         }
+        //  console.log('new res',totalLikes);
+         res.render("main_page/index.ejs", { results , totalLikes});
+         return;
+    });
     // console.log(results[0].user_id);
-    res.render("main_page/index.ejs", { results });
   });
 });
+
 
 let q='select username,id from users';
 con.query(q, function (error, results, fields) {

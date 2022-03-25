@@ -1,1 +1,13 @@
+* {
+  /* color: #dfd3d3; */
+  font-weight: 600;
+}
+.icon {
+  font-size: 32px;
+  color: #dfd3d3;
+}
 
+::placeholder {
+  /* color: #dfd3d3; */
+  opacity: 1;
+}

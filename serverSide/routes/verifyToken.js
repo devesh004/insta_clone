@@ -11,6 +11,7 @@ const verifyToken = (req, res, next) => {
         console.log("TOKEN ERRORRRR    ", err);
         res.status(403).json("Token not valid!");
       }
+      // console.log(data);
       req.user = data;
       // console.log("GOT THE USER   ", req.user);
       next();
@@ -22,7 +23,8 @@ const verifyToken = (req, res, next) => {
 
 const verifyTokenAndAuth = (req, res, next) => {
   verifyToken(req, res, () => {
-    if (req.user.id === req.params.id || req.user.isAdmin) {
+    if (req.user.id == req.params.id || req.user.isAdmin) {
+      console.log("verified");
       next();
     } else {
       res

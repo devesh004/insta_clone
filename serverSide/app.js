@@ -12,7 +12,7 @@ const session = require("express-session");
 const flash = require("connect-flash");
 const cors = require("cors");
 const userRoutes = require("./routes/userRoutes");
-const photoRoutes = require("./routes/photoRoutes");
+const postRoutes = require("./routes/postRoutes");
 // const faker = require("faker");
 // const bcrypt = require("bcryptjs");
 // const jwt = require("jsonwebtoken");
@@ -24,9 +24,9 @@ db.connect(function (err) {
   console.log("Connected!");
 });
 
-app.engine("ejs", ejsMate);
-app.set("view engine", "ejs");
-app.set("views", path.join(__dirname, "views"));
+// app.engine("ejs", ejsMate);
+// app.set("view engine", "ejs");
+// app.set("views", path.join(__dirname, "views"));
 app.use(express.urlencoded({ extended: true }));
 app.use(methodOverride("_method"));
 
@@ -55,7 +55,7 @@ app.use((req, res, next) => {
 });
 
 app.use("/api/users/", userRoutes);
-app.use("/api/photos/", photoRoutes);
+app.use("/api/posts/", postRoutes);
 
 //fake data
 /**
@@ -89,51 +89,41 @@ app.get("/", (req, res) => {
   res.render("../home");
 });
 
-app.get("/main", (req, res) => {
-  let q = `select image_url,username,photos.user_id,photos.id as photo_id from photos
-    join users on users.id=user_id
-    group by photos.id
-    order by photos.created_at desc`;
-  db.query(q, function (error, results, fields) {
-    if (error) {
-      console.log(error);
-      throw error;
-    }
-    let aq = `select count(*) as likes from photos
-    join likes on photos.id=photo_id group by photos.id 
-    order by photos.created_at desc`;
-    db.query(aq, function (err, totalLikes, fields) {
-      if (err) {
-        console.log(err);
-        throw error;
-      }
-      //  console.log('new res',totalLikes);
-      res.render("main_page/index.ejs", { results, totalLikes });
-      return;
-    });
-    // console.log(results[0].user_id);
-  });
-});
-
-let q = "select username,id from users";
-db.query(q, function (error, results, fields) {
-  if (error) {
-    console.log(error);
-    throw error;
-  }
-  // console.log(results);
-  exports.Userlist = results;
-});
+// app.get("/main", (req, res) => {
+//   let q = `select image_url,username,photos.user_id,photos.id as photo_id from photos
+//     join users on users.id=user_id
+//     group by photos.id
+//     order by photos.created_at desc`;
+//   db.query(q, function (error, results, fields) {
+//     if (error) {
+//       console.log(error);
+//       throw error;
+//     }
+//     let aq = `select count(*) as likes from photos
+//     join likes on photos.id=photo_id group by photos.id
+//     order by photos.created_at desc`;
+//     db.query(aq, function (err, totalLikes, fields) {
+//       if (err) {
+//         console.log(err);
+//         throw error;
+//       }
+//       //  console.log('new res',totalLikes);
+//       res.render("main_page/index.ejs", { results, totalLikes });
+//       return;
+//     });
+//     // console.log(results[0].user_id);
+//   });
+// });
 
 app.all("*", (req, res, next) => {
   next(new AppError("Page Not Found :|"));
 });
 
-app.use((err, req, res, next) => {
-  const { status = 500, message = "Something went wrong" } = err;
-  res.status(status).render("error", { message });
-});
+// app.use((err, req, res, next) => {
+//   const { status = 500, message = "Something went wrong" } = err;
+//   res.status(status).render("error", { message });
+// });
 
-app.listen(3000, () => {
-  console.log("hey baby, You are listening 3000 port");
+app.listen(3001, () => {
+  console.log("hey baby, You are listening 3001 port");
 });

@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { Form, Button } from "react-bootstrap";
 import styled from "styled-components";
-import { registerUser } from "../redux/apiCalls/userCalls";
-import { useDispatch } from "react-redux";
+import { editUser, registerUser } from "../redux/apiCalls/userCalls";
+import { useDispatch, useSelector } from "react-redux";
 import { mobile } from "../responsive";
 import {
   getStorage,
@@ -11,6 +11,7 @@ import {
   getDownloadURL,
 } from "firebase/storage";
 import app from "../firebase";
+import LoaderSec from "../loaders/LoaderSec";
 const Container = styled.div`
   flex: 2;
   display: flex;
@@ -50,18 +51,46 @@ const Username = styled.span`
   letter-spacing: 1.5px;
 `;
 
-const Register = () => {
-  const [inputs, setInputs] = useState({});
-  const [file, setFile] = useState();
+const EditProfile = () => {
+  const { currUser, fetching } = useSelector((state) => state.user);
+  const [inputs, setInputs] = useState({
+    ...currUser,
+    pWeb: currUser.websites !== null ? currUser.websites.pWeb || null : null,
+  });
+  const [file, setFile] = useState(null);
+  const [validated, setValidated] = useState(false);
   const dispatch = useDispatch();
+
   const handleChanges = (e) => {
     setInputs((prev) => {
       return { ...prev, [e.target.name]: e.target.value };
     });
   };
+
   console.log(inputs);
+
   const submitHandler = (e) => {
+    const form = e.currentTarget;
     e.preventDefault();
+    if (form.checkValidity() === false) {
+      e.stopPropagation();
+    }
+    setValidated(true);
+    if (file === null) {
+      console.log("No Profile Image");
+      const { pWeb, ...others } = inputs;
+      const websites = { ...currUser.websites, pWeb };
+      console.log(websites);
+      const user = {
+        ...others,
+        profileImg: currUser.profileImg,
+        type: "edit",
+        websites,
+      };
+      editUser(dispatch, currUser.id, user);
+      return;
+    }
+
     const fileName = new Date().getTime() + file.name;
     const storage = getStorage(app);
     const storageRef = ref(storage, fileName);
@@ -98,121 +127,154 @@ const Register = () => {
         // Handle successful uploads on complete
         // For instance, get the download URL: https://firebasestorage.googleapis.com/...
         getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-          const user = { ...inputs, profileImg: downloadURL };
-          registerUser(dispatch, user);
+          console.log(downloadURL);
+          const { pWeb, ...others } = inputs;
+          let webs = { ...JSON.parse(currUser.websites), pWeb };
+          let websites = JSON.stringify(websites);
+          console.log(websites);
+          const user = {
+            ...others,
+            profileImg: downloadURL,
+            type: "edit",
+            websites,
+          };
+          editUser(dispatch, currUser.id, user);
         });
       }
     );
   };
 
   return (
-    <Container>
-      <Wrapper>
-        <Sec>
-          <ProfileImage src="https://images.unsplash.com/photo-1441786485319-5e0f0c092803?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1887&q=80" />
-          <Username>Devesh Shakya</Username>
-        </Sec>
-        <Form>
-          <Form.Group
-            className="mb-3"
-            controlId="formBasicName"
-            style={{ fontFamily: "Verdana" }}
-          >
-            <Form.Label>Name</Form.Label>
-            <Form.Control
-              type="text"
-              placeholder="Enter name"
-              name="fullName"
-              onChange={handleChanges}
-            />
-          </Form.Group>
-          <Form.Group
-            className="mb-3"
-            controlId="formBasicName"
-            style={{ fontFamily: "Verdana" }}
-          >
-            <Form.Label>Username</Form.Label>
-            <Form.Control
-              type="text"
-              placeholder="Enter username"
-              name="username"
-              onChange={handleChanges}
-            />
-          </Form.Group>
-          <Form.Group
-            className="mb-3"
-            controlId="formBasicEmail"
-            style={{ fontFamily: "Verdana" }}
-          >
-            <Form.Label>Personal Website</Form.Label>
-            <Form.Control
-              type="text"
-              placeholder="change or add your website"
-              name="website"
-              onChange={handleChanges}
-            />
-          </Form.Group>
-          <Form.Group
-            className="mb-3"
-            controlId="formBasicphone"
-            style={{ fontFamily: "Verdana" }}
-          >
-            <Form.Label>Mobile Number</Form.Label>
-            <Form.Control
-              type="text"
-              placeholder="Enter phone number"
-              name="phoneNo"
-              onChange={handleChanges}
-            />
-          </Form.Group>
-          <Form.Group
-            className="mb-3"
-            controlId="formBasicPassword"
-            style={{ fontFamily: "Verdana" }}
-          >
-            <Form.Label>Email</Form.Label>
-            <Form.Control
-              type="email"
-              placeholder="email"
-              name="email"
-              onChange={handleChanges}
-            />
-          </Form.Group>
-          <Form.Group className="mb-3" controlId="exampleForm.ControlTextarea1">
-            <Form.Label>Bio</Form.Label>
-            <Form.Control
-              placeholder="say something"
-              as="textarea"
-              name="bio"
-              style={{ fontFamily: "Verdana" }}
-              rows={3}
-            />
-          </Form.Group>
+    <>
+      {fetching ? (
+        <LoaderSec />
+      ) : (
+        <Container>
+          <Wrapper>
+            <Sec>
+              <ProfileImage
+                src={
+                  currUser.profileImg ||
+                  "https://images.unsplash.com/photo-1441786485319-5e0f0c092803?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1887&q=80"
+                }
+              />
+              <Username>{currUser.username}</Username>
+            </Sec>
+            <Form onSubmit={submitHandler} noValidate validated={validated}>
+              <Form.Group
+                className="mb-3"
+                controlId="formBasicName"
+                style={{ fontFamily: "Verdana" }}
+              >
+                <Form.Label>Name</Form.Label>
+                <Form.Control
+                  required
+                  type="text"
+                  placeholder="Enter name"
+                  name="fullName"
+                  value={inputs.fullName}
+                  onChange={handleChanges}
+                />
+              </Form.Group>
+              <Form.Group
+                className="mb-3"
+                controlId="formBasicName"
+                style={{ fontFamily: "Verdana" }}
+              >
+                <Form.Label>Username</Form.Label>
+                <Form.Control
+                  required
+                  type="text"
+                  placeholder="Enter username"
+                  name="username"
+                  value={inputs.username}
+                  onChange={handleChanges}
+                />
+              </Form.Group>
+              <Form.Group
+                className="mb-3"
+                controlId="formBasicEmail"
+                style={{ fontFamily: "Verdana" }}
+              >
+                <Form.Label>Personal Website</Form.Label>
+                <Form.Control
+                  type="text"
+                  placeholder="change or add your website"
+                  name="pWeb"
+                  value={inputs.pWeb}
+                  onChange={handleChanges}
+                />
+              </Form.Group>
+              <Form.Group
+                className="mb-3"
+                controlId="formBasicphone"
+                style={{ fontFamily: "Verdana" }}
+              >
+                <Form.Label>Mobile Number</Form.Label>
+                <Form.Control
+                  type="text"
+                  placeholder="Enter phone number"
+                  name="phoneNo"
+                  value={inputs.phoneNo}
+                  onChange={handleChanges}
+                />
+              </Form.Group>
+              <Form.Group
+                className="mb-3"
+                controlId="formBasicPassword"
+                style={{ fontFamily: "Verdana" }}
+              >
+                <Form.Label>Email</Form.Label>
+                <Form.Control
+                  required
+                  type="email"
+                  placeholder="email"
+                  name="email"
+                  value={inputs.email}
+                  onChange={handleChanges}
+                />
+              </Form.Group>
+              <Form.Group
+                className="mb-3"
+                controlId="exampleForm.ControlTextarea1"
+              >
+                <Form.Label>Bio</Form.Label>
+                <Form.Control
+                  placeholder="say something"
+                  as="textarea"
+                  name="bio"
+                  value={inputs.bio !== null ? inputs.bio : ""}
+                  onChange={handleChanges}
+                  style={{ fontFamily: "Verdana" }}
+                  rows={3}
+                />
+              </Form.Group>
 
-          <Form.Group
-            className="mb-3"
-            controlId="formBasicImg"
-            style={{ fontFamily: "Verdana" }}
-          >
-            <Form.Label>Change Profile Photo</Form.Label>
-            <Form.Control
-              type="file"
-              style={{ border: "none" }}
-              onChange={(e) => setFile(e.target.files[0])}
-            />
-          </Form.Group>
-          <Button
-            variant="primary"
-            type="submit"
-            style={{ letterSpacing: "1px" }}
-            onClick={submitHandler}
-          >
-            Update
-          </Button>
-        </Form>
-      </Wrapper>
-    </Container>
+              <Form.Group
+                className="mb-3"
+                controlId="formBasicImg"
+                style={{ fontFamily: "Verdana" }}
+              >
+                <Form.Label>Change Profile Photo</Form.Label>
+                <Form.Control
+                  type="file"
+                  style={{ border: "none" }}
+                  onChange={(e) => setFile(e.target.files[0])}
+                />
+              </Form.Group>
+              <Button
+                variant="primary"
+                type="submit"
+                style={{ letterSpacing: "1px" }}
+              >
+                Update
+              </Button>
+            </Form>
+          </Wrapper>
+        </Container>
+      )}
+    </>
   );
 };
 
-export default Register;
+export default EditProfile;

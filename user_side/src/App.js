@@ -12,6 +12,7 @@ import {
 import Setting from "./pages/Setting";
 import Register from "./pages/Register";
 import { useSelector } from "react-redux";
+import Error from "./flash/Error";
 function App() {
   const { currUser } = useSelector((state) => state.user);
   return (
@@ -21,6 +22,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="*" element={<PageNotFound />} />
           </Routes>
         )}
         {currUser && (

@@ -48,6 +48,7 @@ const SideItem = styled.div`
   ${mobile({ justifyContent: "flexStart" })}
 `;
 const ColName = styled.span`
+  color: #3d3a3d;
   font-weight: bolder;
   letter-spacing: 1px;
   ${mobile({ marginLeft: "5px" })}
@@ -55,6 +56,7 @@ const ColName = styled.span`
 
 const Setting = () => {
   const [compo, setCompo] = useState("edit");
+  console.log("EDIT");
   const render = (prop) => {
     setCompo(prop);
   };

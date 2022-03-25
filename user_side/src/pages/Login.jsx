@@ -7,6 +7,7 @@ import styled from "styled-components";
 import Loader from "../Loader";
 import { loginUser } from "../redux/apiCalls/userCalls";
 import { mobile } from "../responsive";
+import Error from "../flash/Error";
 
 const Container = styled.div`
   display: flex;
@@ -32,17 +33,26 @@ const Buttons = styled.div`
 const Login = () => {
   const [username, setUsername] = useState("");
   const [userPass, setUserPass] = useState("");
-  const fetching = useSelector((state) => state.user.fetching);
   const dispatch = useDispatch();
-  const onClickHandler = (e) => {
-    e.preventDefault();
+  const { fetching, error } = useSelector((state) => state.user);
+  const [validated, setValidated] = useState(false);
+
+  const onClickHandler = (event) => {
+    const form = event.currentTarget;
+    event.preventDefault();
+    if (form.checkValidity() === false) {
+      event.stopPropagation();
+    }
+    setValidated(true);
     loginUser(dispatch, { userPass, username });
   };
+
   return (
     <Container>
       <Wrapper>
+        {error && <Error />}
         {fetching && <Loader />}
-        <Form>
+        <Form noValidate validated={validated} onSubmit={onClickHandler}>
           <Form.Group
             className="mb-3"
             controlId="formBasicEmail"
@@ -50,6 +60,7 @@ const Login = () => {
           >
             <Form.Label>Username</Form.Label>
             <Form.Control
+              required
               type="text"
               name="username"
               placeholder="Enter username"
@@ -64,6 +75,7 @@ const Login = () => {
           >
             <Form.Label>Password</Form.Label>
             <Form.Control
+              required
               type="password"
               placeholder="Password"
               name="userPass"
@@ -78,7 +90,6 @@ const Login = () => {
               style={{ fontFamily: "Verdana", marginBottom: "10px" }}
               variant="primary"
               type="submit"
-              onClick={onClickHandler}
             >
               Login
             </Button>

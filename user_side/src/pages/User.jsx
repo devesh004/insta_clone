@@ -2,12 +2,20 @@ import React, { useState } from "react";
 import styled from "styled-components";
 import Topbar from "../components/Topbar";
 import { Modal } from "react-bootstrap";
-import { FavoriteBorder } from "@material-ui/icons";
+import { AddComment, FavoriteBorder, MoodTwoTone } from "@material-ui/icons";
 import { mobile } from "../responsive";
+import { useSelector } from "react-redux";
+import { useLocation } from "react-router-dom";
+import { useEffect } from "react";
+import { userRequest } from "../requestMethod";
+import PostModal from "../components/PostModal";
+import { handleFollows } from "../redux/apiCalls/userCalls";
 const Container = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
+  color: #dfd3d3;
+  letter-spacing: 1px;
 `;
 const Wrapper = styled.div`
   width: 70%;
@@ -19,10 +27,11 @@ const Wrapper = styled.div`
 `;
 const UserDetails = styled.div`
   margin-top: 100px;
+  width: 60%;
   display: flex;
 `;
 const Left = styled.div`
-  flex: 1;
+  flex: 2;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -99,8 +108,9 @@ const Photo = styled.img`
 const Status = styled.button`
   display: block;
   letter-spacing: 0.8px;
+  color: #3d3a3d;
   :hover {
-    color: white;
+    color: #dfd3d3;
     background-color: #94268e;
   }
   ${mobile({ width: "80%", marginTop: "-3px" })}
@@ -133,10 +143,16 @@ const CommentUser = styled.span`
 const Comments = styled.div`
   display: flex;
   flex-direction: column;
+  overflow: scroll;
+  overflow-x: hidden;
+  height: 89%;
+  margin-right: -320px;
+  padding-right: 320px;
 `;
 const CurrentUser = styled.div`
   display: flex;
   align-items: center;
+  height: 10px;
 `;
 const ComImage = styled.img`
   height: 50px;
@@ -147,116 +163,151 @@ const ComImage = styled.img`
 `;
 const ComUserName = styled.span``;
 const Button = styled.button`
+  color: #3d3a3d;
   :hover {
-    color: white;
+    color: #dfd3d3;
     background-color: #94268e;
   }
 `;
 const ModalImage = styled.img`
-  width: 100%;
+  width: 58%;
   object-fit: cover;
 `;
-const User = () => {
-  const [src, setSrc] = useState("");
-  const [show, setShow] = useState(false);
 
-  const clickPhotoHandler = (e) => {
-    setSrc(e.target.src);
-    setShow(true);
+const ModalBody = styled.div`
+  height: 70vh;
+`;
+const Wrapper2 = styled.div``;
+
+const CommentHere = styled.div`
+  width: 37.2%;
+  margin: 6px;
+  margin-right: 15px;
+  display: flex;
+  border-top: 1px solid #888181;
+  align-items: center;
+  padding: 10px;
+  position: fixed;
+  bottom: 0px;
+  /* background-color: #dfd3d3; */
+  margin-bottom: 32px;
+`;
+
+const CommentText = styled.input`
+  height: 100%;
+  width: 90%;
+  margin-left: 10px;
+  background: none;
+  color: white;
+  outline: none;
+  border: none;
+  letter-spacing: 1px;
+`;
+
+const CommentDet = styled.div`
+  display: flex;
+  flex-direction: column;
+  position: relative;
+`;
+
+const User = () => {
+  const [pos, setPos] = useState(null);
+  const userId = useLocation().pathname.split("/")[2];
+  const { currUser } = useSelector((state) => state.user);
+  const [user, setUser] = useState(null);
+  const [stat, setStat] = useState(null);
+  const currentId = currUser.id;
+
+  useEffect(() => {
+    console.log(currentId);
+    const findData = async () => {
+      try {
+        const res = await userRequest.post(`/users/user/${userId}`, {
+          currentId,
+        });
+        console.log("RES DATA ", res.data);
+        setUser(res.data);
+      } catch (err) {
+        console.log(err);
+      }
+    };
+    findData();
+  }, []);
+
+  console.log(user);
+
+  const handleHide = () => {
+    setPos(null);
   };
+
+  const handleFollow = async () => {
+    if (userId == currentId) {
+      return;
+    }
+    console.log("Moved ");
+    const res = handleFollows(userId, currentId);
+    const f = user.followers;
+    if (user.status === 1) {
+      setUser((prev) => ({ ...prev, status: 0, followers: f - 1 }));
+    } else {
+      setUser((prev) => ({ ...prev, status: 1, followers: f + 1 }));
+    }
+  };
+
   return (
     <>
       <Container>
         <Topbar />
-        <Wrapper>
-          <UserDetails>
-            <Left>
-              <Image src="https://images.unsplash.com/photo-1568602471122-7832951cc4c5?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2070&q=80" />
-              <Name>Devesh Shakya</Name>
-            </Left>
-            <Right>
-              <Update>
-                <Username>devesh_04</Username>
-                <Button>Update Profile</Button>
-              </Update>
-              <AccountDet>
-                <Followers>
-                  <Number>286</Number> followers
-                </Followers>
-                <Following>
-                  <Number>304</Number> following
-                </Following>
-                <Posts>
-                  <Number>6</Number> posts
-                </Posts>
-              </AccountDet>
-              <Status>Following</Status>
-            </Right>
-          </UserDetails>
-
-          <UserPosts>
-            <Photo
-              onClick={clickPhotoHandler}
-              src="https://images.unsplash.com/photo-1568602471122-7832951cc4c5?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2070&q=80"
-            />
-            <Photo
-              onClick={clickPhotoHandler}
-              src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2070&q=80"
-            />
-            <Photo
-              onClick={clickPhotoHandler}
-              src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2070&q=80"
-            />
-            <Photo
-              onClick={clickPhotoHandler}
-              src="https://images.unsplash.com/photo-1568602471122-7832951cc4c5?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2070&q=80"
-            />
-            <Photo
-              onClick={clickPhotoHandler}
-              src="https://images.unsplash.com/photo-1568602471122-7832951cc4c5?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2070&q=80"
-            />
-          </UserPosts>
-        </Wrapper>
-        <Modal
-          style={{ marginTop: "30px" }}
-          show={show}
-          onHide={() => setShow(false)}
-          dialogClassName="modal-90w"
-          aria-labelledby="example-custom-modal-styling-title"
-        >
-          <Modal.Header closeButton>
-            <Modal.Title
-              id="example-custom-modal-styling-title"
-              style={{ fontWeight: "bolder" }}
-            >
-              <CurrentUser>
-                <ComImage src="https://images.unsplash.com/photo-1568602471122-7832951cc4c5?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2070&q=80" />
-                <ComUserName>devesh_shakya</ComUserName>
-              </CurrentUser>
-            </Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-            <ModalImage src={src} />
-            <Comments>
-              <CommentItem>
-                <UserImage src="https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1780&q=80" />
-                <UserComment>
-                  <CommentBody>
-                    <CommentUser>Username</CommentUser>
-                    This is a commentsfg ass fdbbfdbdrg dfgsdg vvbcvb vvdfv
-                    dfsdf dgfbdfdss esrdh
-                    <FavoriteBorder
-                      style={{
-                        height: "20px",
-                        cursor: "pointer",
-                      }}
-                    />
-                  </CommentBody>
-                </UserComment>
-              </CommentItem>
-            </Comments>
-          </Modal.Body>
-        </Modal>
+        {user !== null && (
+          <Wrapper>
+            <UserDetails>
+              <Left>
+                <Image
+                  src={
+                    user.user.profileImg === "null" || null
+                      ? "https://jpcprinting.co.uk/wp-content/uploads/2015/08/blank-profile.png"
+                      : user.user.profileImg
+                  }
+                />
+                <Name>{user.user.fullName}</Name>
+              </Left>
+              <Right>
+                <Update>
+                  <Username>{user.user.username}</Username>
+                  <Button>Update Profile</Button>
+                </Update>
+                <AccountDet>
+                  <Followers>
+                    <Number>{user.followers}</Number> followers
+                  </Followers>
+                  <Following>
+                    <Number>{user.following}</Number> following
+                  </Following>
+                  <Posts>
+                    <Number>{user.posts.length}</Number> posts
+                  </Posts>
+                </AccountDet>
+                {userId == currentId ? null : (
+                  <Status onClick={handleFollow}>
+                    {user.status === 1 ? "Following" : "Follow"}
+                  </Status>
+                )}
+              </Right>
+            </UserDetails>
+            <UserPosts>
+              {user.posts.map((post) => (
+                <Photo
+                  key={post.id}
+                  src={JSON.parse(JSON.parse(post.image_urls)[0])}
+                  onClick={() =>
+                    setPos({ post_Id: post.id, ...post, ...user.user })
+                  }
+                />
+              ))}
+            </UserPosts>
+            {pos && <PostModal post={pos} handleClose={handleHide} />}
+          </Wrapper>
+        )}
       </Container>
     </>
   );

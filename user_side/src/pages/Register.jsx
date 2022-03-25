@@ -2,8 +2,9 @@ import React, { useState } from "react";
 import { Form, Button } from "react-bootstrap";
 import styled from "styled-components";
 import { registerUser } from "../redux/apiCalls/userCalls";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { mobile } from "../responsive";
+import Error from "../flash/Error";
 import {
   getStorage,
   ref,
@@ -11,7 +12,7 @@ import {
   getDownloadURL,
 } from "firebase/storage";
 import app from "../firebase";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 const Container = styled.div`
   display: flex;
   height: 100vh;
@@ -43,21 +44,38 @@ const Div2 = styled.div`
 
 const Buttons = styled.div`
   display: flex;
+  width: 100%;
   justify-content: space-between;
 `;
 
 const Register = () => {
   const [inputs, setInputs] = useState({});
   const [file, setFile] = useState();
+  const [validated, setValidated] = useState(false);
+  const { error } = useSelector((state) => state.user);
+  const navigate = useNavigate();
   const dispatch = useDispatch();
   const handleChanges = (e) => {
     setInputs((prev) => {
       return { ...prev, [e.target.name]: e.target.value };
     });
   };
-  console.log(inputs);
+  // console.log(inputs);
+
   const submitHandler = (e) => {
+    const form = e.currentTarget;
     e.preventDefault();
+    if (form.checkValidity() === false) {
+      e.stopPropagation();
+    }
+    setValidated(true);
+    if (!file) {
+      const user = { ...inputs, profileImg: null };
+      registerUser(dispatch, user);
+      navigate("/");
+      return;
+    }
+
     const fileName = new Date().getTime() + file.name;
     const storage = getStorage(app);
     const storageRef = ref(storage, fileName);
@@ -87,7 +105,7 @@ const Register = () => {
           default:
         }
       },
-      (error) => {
+      (err) => {
         // Handle unsuccessful uploads
       },
       () => {
@@ -96,6 +114,7 @@ const Register = () => {
         getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
           const user = { ...inputs, profileImg: downloadURL };
           registerUser(dispatch, user);
+          navigate("/login");
         });
       }
     );
@@ -104,22 +123,28 @@ const Register = () => {
   return (
     <Container>
       <Form
+        noValidate
+        validated={validated}
         style={{
           width: "100%",
           display: "flex",
           justifyContent: "center",
           height: "100%",
         }}
+        onSubmit={submitHandler}
       >
         <Wrapper>
           <Div1>
+            {error && <Error />}
+
             <Form.Group
               className="mb-3"
               controlId="formBasicName"
               style={{ fontFamily: "Verdana" }}
             >
-              <Form.Label>Full Name</Form.Label>
+              <Form.Label>Name</Form.Label>
               <Form.Control
+                required
                 type="text"
                 placeholder="Enter name"
                 name="fullName"
@@ -133,6 +158,7 @@ const Register = () => {
             >
               <Form.Label>Username</Form.Label>
               <Form.Control
+                required
                 type="text"
                 placeholder="Enter username"
                 name="username"
@@ -146,6 +172,7 @@ const Register = () => {
             >
               <Form.Label>Email address</Form.Label>
               <Form.Control
+                required
                 type="email"
                 placeholder="Enter email"
                 name="email"
@@ -177,6 +204,7 @@ const Register = () => {
             >
               <Form.Label>Password</Form.Label>
               <Form.Control
+                required
                 type="password"
                 placeholder="Password"
                 name="userPass"
@@ -185,11 +213,12 @@ const Register = () => {
             </Form.Group>
             <Form.Group
               className="mb-3"
-              controlId="formBasicPassword"
+              controlId="formBsicPassword"
               style={{ fontFamily: "Verdana" }}
             >
               <Form.Label>Confirm Password</Form.Label>
               <Form.Control
+                required
                 type="password"
                 placeholder="Password"
                 name="conPassword"
@@ -212,16 +241,10 @@ const Register = () => {
               <Button
                 variant="success"
                 type="submit"
-                style={{ fontFamily: "Verdana" }}
-                onClick={submitHandler}
+                style={{ fontFamily: "Verdana", width: "100%" }}
               >
                 Register
               </Button>
-              <Link to="/">
-                <Button style={{ fontFamily: "Verdana" }} variant="primary">
-                  Have Account
-                </Button>
-              </Link>
             </Buttons>
           </Div2>
         </Wrapper>

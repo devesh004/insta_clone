@@ -1,5 +1,10 @@
-import { AccountCircle, Search, Settings } from "@material-ui/icons";
-import React from "react";
+import {
+  AccountCircle,
+  CloseOutlined,
+  Search,
+  Settings,
+} from "@material-ui/icons";
+import React, { useState } from "react";
 import {
   Navbar,
   Container,
@@ -8,11 +13,14 @@ import {
   Form,
   FormControl,
   Button,
+  Modal,
 } from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import styled from "styled-components";
-import { logoutUser } from "../redux/apiCalls/userCalls";
+import { logoutUser, searchUser } from "../redux/apiCalls/userCalls";
+import CreatePost from "../pages/CreatePost";
+import { blue } from "@material-ui/core/colors";
 
 const Chat = styled.span`
   cursor: pointer;
@@ -27,67 +35,227 @@ const Image = styled.img`
   width: 35px;
   margin: 0px 20px;
 `;
+
+const SearchUsers = styled.div`
+  height: 300px;
+  width: 312px;
+  background-color: #dfd3d3;
+  border-radius: 10px;
+  margin-top: 15px;
+  margin-left: 1058px;
+  margin-right: 10px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  overflow-y: auto;
+  position: fixed;
+
+  z-index: 3;
+`;
+
+const User = styled.div`
+  height: 60px;
+  display: flex;
+  color: #424141;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  margin: -40px 0px;
+  padding: 5px;
+  :nth-child(1) {
+    margin-top: 40px;
+  }
+  :hover {
+    background-color: #f3d5df;
+  }
+`;
+const UserName = styled.span`
+  color: #6d6969;
+  letter-spacing: 1px;
+`;
+
+const UserImage = styled.img`
+  height: 45px;
+  width: 45px;
+  border-radius: 50%;
+  margin: 0px 15px;
+  object-fit: cover;
+`;
+
+const Close = styled.div`
+  height: 40px;
+  width: 100%;
+  position: fixed;
+  margin-bottom: 10px;
+`;
+const Names = styled.div`
+  height: 28px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  font-size: 15px;
+`;
+const FullName = styled.span`
+  letter-spacing: 1.2px;
+`;
+
 const Topbar = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { currUser } = useSelector((state) => state.user);
+  const [modalShow, setModalShow] = useState(false);
+  const [show, setShow] = useState(false);
+  const [showUsers, setShowUsers] = useState([]);
+
   const logOut = () => {
     logoutUser(dispatch);
     navigate("/");
   };
-  return (
-    <Navbar
-      expand="sm"
-      fixed="top"
-      className="bg-primary"
-      style={{ height: "60px", marginBottom: "10px" }}
-    >
-      <Container fluid>
-        <Navbar.Toggle aria-controls="navbarScroll" />
-        <Navbar.Collapse id="navbarScroll">
-          <Nav className="me-auto my-2 my-lg-0" navbarScroll>
-            <Nav.Link href="/">Home</Nav.Link>
-            <Nav.Link href="#action2">Trending</Nav.Link>
 
-            <NavDropdown title="Account" id="navbarScrollingDropdown">
-              <NavDropdown.Item href="/user/sgsdgsfdgsfdv">
-                <AccountCircle /> Profile
-              </NavDropdown.Item>
-              <NavDropdown.Item href="/settings/3454354">
-                <Settings /> Settings
-              </NavDropdown.Item>
-              <NavDropdown.Divider />
-              <NavDropdown.Item onClick={logOut}>Logout</NavDropdown.Item>
-            </NavDropdown>
-          </Nav>
-          <Link to="/chat">
-            <Image src="https://purepng.com/public/uploads/large/black-plus-symbol-4oz.png" />
-            <Image src="https://www.pinclipart.com/picdir/big/371-3715212_live-chat-clipart-chat-box-purple-chat-box.png" />
-            <Image src="https://twemoji.maxcdn.com/2/svg/1f5f3.svg" />
-          </Link>
-          <Form className="d-flex">
-            <FormControl
-              type="search"
-              placeholder="Search"
-              className="me-2"
-              aria-label="Search"
-              style={{ fontWeight: " bolder ", letterSpacing: "0.8px" }}
-            />
-            <Button
-              variant="dark"
+  const handleChange = async (e) => {
+    const input = e.target.value;
+    if (input.length === 0) {
+      setShowUsers([]);
+      setShow(false);
+      return;
+    }
+    setShow(true);
+    console.log(input);
+    const res = await searchUser(input);
+    console.log(res);
+    setShowUsers(res);
+  };
+
+  return (
+    <>
+      <Navbar
+        expand="sm"
+        fixed="top"
+        className="bg-primary"
+        style={{
+          height: "60px",
+          marginBottom: "10px",
+        }}
+      >
+        <Container fluid>
+          <Navbar.Toggle aria-controls="navbarScroll" />
+          <Navbar.Collapse id="navbarScroll">
+            <Nav className="me-auto my-2 my-lg-0" navbarScroll>
+              <Nav.Link href="/">Home</Nav.Link>
+              {currUser && (
+                <>
+                  <Nav.Link href="/trending">Trending</Nav.Link>
+                  <NavDropdown title="Account" id="navbarScrollingDropdown">
+                    <NavDropdown.Item>
+                      <Link
+                        to={`/user/${currUser.id}`}
+                        style={{
+                          textDecoration: "none",
+                          letterSpacing: "1.5px",
+                          fontWeight: "300",
+                        }}
+                      >
+                        <AccountCircle /> Profile
+                      </Link>
+                    </NavDropdown.Item>
+                    <NavDropdown.Item>
+                      <Link
+                        to={`/settings/${currUser.id}`}
+                        style={{
+                          textDecoration: "none",
+                          letterSpacing: "1.5px",
+                          fontWeight: "300",
+                        }}
+                      >
+                        <Settings /> Settings
+                      </Link>
+                    </NavDropdown.Item>
+                    <NavDropdown.Divider />
+                    <NavDropdown.Item onClick={logOut}>Logout</NavDropdown.Item>
+                  </NavDropdown>
+                </>
+              )}
+            </Nav>
+            {currUser && (
+              <>
+                <>
+                  <i
+                    className="far fa-plus-square icon"
+                    onClick={() => setModalShow(true)}
+                  ></i>
+                  <CreatePost
+                    show={modalShow}
+                    onHide={() => setModalShow(false)}
+                  />
+                </>
+                <Link to="/chat" style={{ margin: "20px" }}>
+                  <i className="fas fa-comment icon"></i>
+                </Link>
+              </>
+            )}
+            {!currUser && <Nav.Link href="/">Login</Nav.Link>}
+            <Form className="d-flex">
+              <FormControl
+                type="search"
+                placeholder="Search"
+                className="me-2"
+                aria-label="Search"
+                style={{ fontWeight: " bolder ", letterSpacing: "0.8px" }}
+                onChange={handleChange}
+              />
+              <Button
+                style={{
+                  backgroundColor: "#dfd3d3",
+                  color: "black",
+                  border: "none",
+                }}
+              >
+                <i
+                  class="fas fa-search"
+                  style={{ color: "#3d3a3d", fontSize: "20px" }}
+                ></i>
+              </Button>
+            </Form>
+          </Navbar.Collapse>
+        </Container>
+      </Navbar>
+      {show && (
+        <SearchUsers onHide={() => setShow(false)}>
+          <Close>
+            <CloseOutlined
               style={{
-                backgroundColor: "#94268e",
-                color: "white",
-                border: "none",
+                marginLeft: "270px",
+                color: "#dfd3d3",
+                cursor: "pointer",
+                marginBottom: "-15px",
+                backgroundColor: "#fa4783",
+                borderRadius: "50%",
               }}
-            >
-              <Search />
-            </Button>
-          </Form>
-        </Navbar.Collapse>
-      </Container>
-    </Navbar>
+              onClick={() => setShow(false)}
+            />
+          </Close>
+          {showUsers.map((user) => (
+            <Link to={`/user/${user.id}`} style={{ textDecoration: "none" }}>
+              <User key={user.id}>
+                <UserImage
+                  src={
+                    user.profileImg ||
+                    "https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1780&q=80"
+                  }
+                />
+                <Names>
+                  <FullName>{user.fullName}</FullName>
+                  <UserName>{user.username}</UserName>
+                </Names>
+              </User>
+            </Link>
+          ))}
+        </SearchUsers>
+      )}
+    </>
   );
 };
 
 export default Topbar;
+// "#3d3a3d"

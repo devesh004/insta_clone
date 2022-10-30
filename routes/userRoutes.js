@@ -9,7 +9,7 @@ const {
   verifyTokenAndAuth,
   verifyTokenAndAdmin,
 } = require("./verifyToken");
-const { updateQuery } = require("../middleware/user");
+// const { updateQuery } = require("../middleware/user");
 
 router.post("/signUp", (req, res, next) => {
   const {
@@ -149,6 +149,9 @@ router.put("/userEdit/:id", (req, res) => {
   console.log(user);
   let q;
   if (type === "edit") {
+    if (user.username == "guest") {
+      res.status(401).json({ msg: "You are not authorized" });
+    }
     const web = JSON.stringify(user.websites);
     q = `update users SET username="${user.username}",fullName="${user.fullName}",phoneNo="${user.phoneNo}",
     email="${user.email}",bio="${user.bio}",websites='${web}',profileImg="${user.profileImg}" 
@@ -163,6 +166,9 @@ router.put("/userEdit/:id", (req, res) => {
       }
     });
   } else if (type === "changePass") {
+    if (user.username === "guest") {
+      res.status(401).json({ msg: "You are not authorized" });
+    }
     let qu = `select userPass from users where username="${user.username}"`;
     var p = 1;
     con.query(qu, (err, results, fields) => {
@@ -263,7 +269,7 @@ router.get("/userFind/:input", (req, res) => {
 });
 
 router.post("/logout", (req, res) => {
-  // console.log("LOGOUT");
+  console.log("server LOGOUT");
   if (req.headers.token) {
     req.headers.token = "";
   }

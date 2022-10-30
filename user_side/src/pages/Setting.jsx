@@ -6,6 +6,7 @@ import ChangePass from "../components/ChangePass";
 import PrivacyAndSecurity from "../components/PrivacyAndSecurity";
 import Websites from "../components/Websites";
 import { mobile } from "../responsive";
+import { useSelector } from "react-redux";
 const Container = styled.div`
   width: 100%;
   display: flex;
@@ -56,7 +57,8 @@ const ColName = styled.span`
 
 const Setting = () => {
   const [compo, setCompo] = useState("edit");
-  console.log("EDIT");
+  const { currUser } = useSelector((state) => state.user);
+
   const render = (prop) => {
     setCompo(prop);
   };
@@ -69,9 +71,12 @@ const Setting = () => {
             <SideItem onClick={() => render("edit")}>
               <ColName>Edit Profile</ColName>
             </SideItem>
-            <SideItem onClick={() => render("pass")}>
-              <ColName>Change Password</ColName>
-            </SideItem>
+            {currUser.username !== "guest" && (
+              <SideItem onClick={() => render("pass")}>
+                <ColName>Change Password</ColName>
+              </SideItem>
+            )}
+
             <SideItem onClick={() => render("web")}>
               <ColName>Your Websites</ColName>
             </SideItem>

@@ -1,7 +1,12 @@
 import axios from "axios";
 
-const BaseUrl = "http://localhost:3001/api/";
+// const BaseUrl = window.href + "/api/";
+const BaseUrl = "http://localhost:3001/api";
+
 let Token = null;
+// console.log(
+//   JSON.parse(JSON.parse(localStorage.getItem("persist:root")).user).currUser
+// );
 if (
   localStorage.getItem("persist:root") &&
   JSON.parse(JSON.parse(localStorage.getItem("persist:root")).user).currUser !==

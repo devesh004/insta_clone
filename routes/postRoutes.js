@@ -7,11 +7,11 @@ const { verifyTokenAndAuth, verifyToken } = require("./verifyToken");
 router.get("/allPosts/:id", verifyToken, (req, res) => {
   const size = 4;
   const id = req.params.id;
-  console.log(id);
+  // console.log(id);
   let { page } = req.query;
   const peg = parseInt(page);
   const skip = (peg - 1) * size;
-  console.log(skip, size);
+  // console.log(skip, size);
   let q = `select image_urls,username,post.user_id,post.id as post_Id,post.created_at as created_at,profileImg,caption,
   (select 1 from likes where user_id=${id} and post_id=post.id) as isLiked,
   (select COALESCE(count(*),0) from comments where post_id=post.id) as comments ,
@@ -20,7 +20,7 @@ router.get("/allPosts/:id", verifyToken, (req, res) => {
     join users on users.id=user_id
     group by post.id
     order by post.created_at desc
-    limit ${skip},${size}`;
+    limit ${skip},${size}`; // instead of skip we can use created_at concept in where condition
   con.query(q, function (error, results, fields) {
     if (error) {
       console.log(error);
@@ -60,9 +60,9 @@ router.post("/createPost/:id", verifyTokenAndAuth, (req, res, next) => {
 
 router.get("/post/:id/comments/:userId", verifyToken, (req, res, next) => {
   const { id, userId } = req.params;
-  console.log(id, userId);
+  // console.log(id, userId);
   let q = `select comment_text as comment,username,user_id,comments.id as comment_id,profileImg,
-  (select 1 from likeComment where users.id=${userId} and comments.id=commentId) as isLiked
+  (select 1 from likeComment where (users.id=${userId} and comments.id=commentId)) as isLiked 
   from users join comments on users.id=user_id where post_id=${id}`;
   con.query(q, (err, results, fields) => {
     if (err) {
@@ -70,7 +70,6 @@ router.get("/post/:id/comments/:userId", verifyToken, (req, res, next) => {
       next(new AppError("No Comment Found", 400));
       return;
     }
-    const post_id = id;
     const comments = results;
     res.status(200).json(comments);
   });
@@ -172,7 +171,7 @@ router.post("/likeComment", (req, res) => {
           console.log("ERROR IS HERE ", err);
         }
       });
-      console.log("DisLiked");
+      // console.log("DisLiked");
       res.status(202).json({ msg: "Removed like" });
       return;
     } else {

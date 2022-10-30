@@ -1,0 +1,30 @@
+{
+  "sqltools.connections": [
+    {
+      "mysqlOptions": {
+        "authProtocol": "default"
+      },
+      "previewLimit": 50,
+      "server": "localhost",
+      "port": 3306,
+      "askForPassword": true,
+      "driver": "MySQL",
+      "name": "Test",
+      "database": "Test",
+      "username": "devesh"
+    },
+    {
+      "mysqlOptions": {
+        "authProtocol": "default"
+      },
+      "previewLimit": 50,
+      "server": "sql6.freesqldatabase.com",
+      "port": 3306,
+      "driver": "MySQL",
+      "name": "insta_clone_database",
+      "database": "sql6481595",
+      "username": "sql6481595",
+      "password": "aZBPuGxHaM"
+    }
+  ]
+}

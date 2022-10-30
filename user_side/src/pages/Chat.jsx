@@ -1,8 +1,19 @@
 import { MoodTwoTone } from "@material-ui/icons";
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
+import { useSelector } from "react-redux";
 import styled from "styled-components";
 import Topbar from "../components/Topbar";
+import Picker from "emoji-picker-react";
+import {
+  getChats,
+  getConversations,
+  getUser,
+  sendMessages,
+} from "../redux/apiCalls/chatCalls";
 import { mobile } from "../responsive";
+import { Link } from "react-router-dom";
+import { io } from "socket.io-client";
+
 const Container = styled.div`
   height: 95vh;
   width: 100%;
@@ -25,6 +36,7 @@ const Left = styled.div`
   border-right: 1px solid #bbb8b8;
   overflow: scroll;
   overflow-x: hidden;
+  ${mobile({ display: "none" })}
 `;
 
 const LeftItem = styled.div`
@@ -50,9 +62,11 @@ const SideItem = styled.div`
   ${mobile({ justifyContent: "flexStart" })}
 `;
 const ColName = styled.span`
+  flex: 3;
   font-weight: bolder;
   letter-spacing: 1px;
   color: #3d3a3d;
+  margin: 10px;
   ${mobile({ marginLeft: "5px" })}
 `;
 const CurrentUser = styled.div`
@@ -67,6 +81,13 @@ const CurrentUser = styled.div`
   ${mobile({ width: "90px" })}
 `;
 const Image = styled.img`
+  height: 40px;
+  width: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-left: 15px;
+`;
+const UserImage = styled.img`
   height: 40px;
   width: 40px;
   border-radius: 50%;
@@ -112,11 +133,20 @@ const Chats = styled.div`
   padding-right: 320px; */
   margin-right: -1px;
 `;
-const ChatBox = styled.span`
+const ChatBox = styled.div`
+  display: flex;
+  max-width: 95%;
+  flex-wrap: wrap;
+  margin: 5px;
+  justify-content: flex-end;
+`;
+const FriendChat = styled.div`
   display: flex;
   max-width: 70%;
   flex-wrap: wrap;
   margin: 5px;
+  /* margin-left: 300px; */
+  align-items: flex-start;
 `;
 const ChatIs = styled.span`
   order: 5;
@@ -146,13 +176,16 @@ const Message = styled.textarea`
   border: none;
   background: none;
   width: auto;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.8px;
   width: 80%;
   overflow: hidden;
   outline: none;
   height: auto;
   padding: 5px;
   resize: none;
+  color: white;
+  position: fixed;
+  top: 10px;
 `;
 const Button = styled.button`
   border: none;
@@ -161,126 +194,221 @@ const Button = styled.button`
   letter-spacing: 0.7px;
 `;
 
+const NoChat = styled.div`
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+`;
+const Head = styled.h4`
+  letter-spacing: 1px;
+`;
+const Con = styled.p`
+  letter-spacing: 0.8px;
+`;
+
 const Chat = () => {
-  const [compo, setCompo] = useState("edit");
-  const render = (prop) => {
-    setCompo(prop);
+  const [users, setUsers] = useState([]);
+  const { currUser } = useSelector((state) => state.user);
+  const [chatUser, setChatUser] = useState(undefined);
+  const [message, setMessage] = useState("");
+  const [messages, setMessages] = useState([]);
+  const [chosenEmoji, setChosenEmoji] = useState(null);
+  const [emojii, setEmojii] = useState(false);
+  const [arrivalMessage, setArrivalMessage] = useState(null);
+  const scrollRef = useRef();
+  // const socket = useRef(io("http://localhost:3001"));
+
+  const onEmojiClick = (event, emojiObject) => {
+    let emoji = emojiObject.emoji;
+    setChosenEmoji(emojiObject);
+    console.log(emoji);
+    setMessage((prev) => prev + `${emoji}`);
   };
+
+  useEffect(() => {
+    const myfun = async () => {
+      const userId = currUser.id;
+      // console.log("USER ID", userId);
+      const res = await getConversations(userId);
+      // console.log(res);
+      let datas = [];
+      res.forEach(async (user, ind) => {
+        const i = user.receiverId == userId ? user.senderId : user.receiverId;
+        const k = await getUser(i);
+        let dev = { ...k, conversationId: user.id };
+        datas.push(dev);
+        if (ind === res.length - 1) {
+          setUsers(datas);
+        }
+      });
+    };
+    currUser && myfun();
+  }, [currUser]);
+
+  // useEffect(() => {
+  //   if (currUser) {
+  //     socket.current = io("http://localhost:3001");
+  //     socket.current.emit("add-user", currUser.id);
+  //   }
+  // }, [currUser]);
+
+  // useEffect(() => {
+  //   socket.current = io("http://localhost:3001");
+  //   const callback = (data) => {
+  //     setArrivalMessage({
+  //       sender: data.senderId,
+  //       text: data.text,
+  //       createdAt: Date.now(),
+  //     });
+  //   };
+  //   socket.current.on("getMessage", callback);
+  //   return () => {
+  //     socket.current.off("getMessage", callback);
+  //   };
+  // }, []);
+
+  // useEffect(() => {
+  //   arrivalMessage &&
+  //     currentChat?.members.includes(arrivalMessage.sender) &&
+  //     setMessages((prev) => [...prev, arrivalMessage]);
+  // }, [arrivalMessage, currentChat]);
+
+  // useEffect(() => {
+  //   socket.current.emit("addUser", currUser.id);
+  //   socket.current.on("getUsers", (users) => {
+  //     setOnlineUsers(
+  //       user.following.filter((f) => user.some((u) => u.userId === f))
+  //     );
+  //   });
+  // }, [currUser]);
+
+  useEffect(async () => {
+    const myfun = async () => {
+      const res = await getChats(chatUser.conversationId);
+      setMessages(res);
+    };
+    chatUser.conversationId && myfun();
+  }, [chatUser]);
+
+  // console.log(messages);
+
+  useEffect(() => {
+    scrollRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  const sendMessage = async () => {
+    if (message.length === 0) {
+      return;
+    }
+    const messageDetail = {
+      conversationId: chatUser.conversationId,
+      sender_id: currUser.id,
+      chat: message,
+    };
+    // socket.current.emit("sendMessage", messageDetail);
+    setMessages((prev) => [...prev, messageDetail]);
+    setMessage("");
+    setEmojii(false);
+    await sendMessages(messageDetail);
+  };
+
+  // useEffect(() => {
+  //   const messageDetail = {
+  //     conversationId: chatUser.conversationId,
+  //     sender_id: chatUser.id,
+  //     chat: message,
+  //   };
+  //   if (socket.current) {
+  //     socket.current.on("msg-recieve", (msg) => {
+  //       setArrivalMsg(messageDetail);
+  //     });
+  //   }
+  // }, []);
+
+  // useEffect(() => {
+  //   arrivalMsg && setMessages((prev) => [...prev, arrivalMsg]);
+  // }, [arrivalMsg]);
+
   return (
     <Container>
       <Topbar />
       <Wrapper>
         <Left>
           <CurrentUser>
-            <Username>devesh_shakya</Username>
+            <Username>{currUser.username}</Username>
           </CurrentUser>
           <LeftItem>
-            <SideItem onClick={() => render("edit")}>
-              <ColName>User1</ColName>
-            </SideItem>
-            <SideItem onClick={() => render("web")}>
-              <ColName>User2</ColName>
-            </SideItem>
-            <SideItem>
-              <ColName>User3</ColName>
-            </SideItem>
-            <SideItem>
-              <ColName>User4</ColName>
-            </SideItem>
-            <SideItem onClick={() => render("privacy")}>
-              <ColName>User5</ColName>
-            </SideItem>
-            <SideItem>
-              <ColName>User6</ColName>
-            </SideItem>
-            <SideItem>
-              <ColName>User7</ColName>
-            </SideItem>
-            <SideItem>
-              <ColName>User7</ColName>
-            </SideItem>
-            <SideItem>
-              <ColName>User7</ColName>
-            </SideItem>
-            <SideItem>
-              <ColName>User7</ColName>
-            </SideItem>
-            <SideItem>
-              <ColName>User7</ColName>
-            </SideItem>
-            <SideItem>
-              <ColName>User7</ColName>
-            </SideItem>
-            <SideItem>
-              <ColName>User7</ColName>
-            </SideItem>
-            <SideItem>
-              <ColName>User7</ColName>
-            </SideItem>
-            <SideItem>
-              <ColName>User7</ColName>
-            </SideItem>
+            {users.map((item) => (
+              <SideItem onClick={() => setChatUser(item)}>
+                <UserImage
+                  src={
+                    item.profileImg ||
+                    "https://jpcprinting.co.uk/wp-content/uploads/2015/08/blank-profile.png"
+                  }
+                />
+                <ColName>{item.username}</ColName>
+              </SideItem>
+            ))}
           </LeftItem>
         </Left>
         <Right>
-          <ChatUser>
-            <Image src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=870&q=80" />
-            <ChatUsername>User</ChatUsername>
-          </ChatUser>
+          <Link to={`/user/${chatUser?.id}`} style={{ textDecoration: "none" }}>
+            {chatUser && (
+              <ChatUser>
+                <Image
+                  src={
+                    chatUser?.profileImg ||
+                    "https://jpcprinting.co.uk/wp-content/uploads/2015/08/blank-profile.png"
+                  }
+                />
+                <ChatUsername>{chatUser?.username}</ChatUsername>
+              </ChatUser>
+            )}
+          </Link>
+
           <Chats>
-            <ChatBox>
-              <ChatIs>Lorem ipsum dolor sit</ChatIs>
-            </ChatBox>
-            <ChatBox>
-              <ChatIs>Hey David</ChatIs>
-            </ChatBox>
-            <ChatBox>
-              <ChatIs>Hey David</ChatIs>
-            </ChatBox>
-            <ChatBox>
-              <ChatIs>tum log batao yr kya krna h</ChatIs>
-            </ChatBox>
-            <ChatBox>
-              <ChatIs>tum log batao yr kya krna h</ChatIs>
-            </ChatBox>
-            <ChatBox>
-              <ChatIs>tum log batao yr kya krna h</ChatIs>
-            </ChatBox>
-            <ChatBox>
-              <ChatIs>tum log batao yr kya krna h</ChatIs>
-            </ChatBox>
-            <ChatBox>
-              <ChatIs>tum log batao yr kya krna h</ChatIs>
-            </ChatBox>
-            <ChatBox>
-              <ChatIs>tum log batao yr kya krna h</ChatIs>
-            </ChatBox>
-            <ChatBox>
-              <ChatIs>tum log batao yr kya krna h</ChatIs>
-            </ChatBox>
-            <ChatBox>
-              <ChatIs>tum log batao yr kya krna h</ChatIs>
-            </ChatBox>
-            <ChatBox>
-              <ChatIs>tum log batao yr kya krna h</ChatIs>
-            </ChatBox>
-            <ChatBox>
-              <ChatIs>tum log batao yr kya krna h</ChatIs>
-            </ChatBox>
+            {messages?.map((message) =>
+              message.sender_id === currUser.id ? (
+                <ChatBox ref={scrollRef}>
+                  <ChatIs>{message.chat}</ChatIs>
+                </ChatBox>
+              ) : (
+                <FriendChat ref={scrollRef}>
+                  <ChatIs>{message.chat}</ChatIs>
+                </FriendChat>
+              )
+            )}
           </Chats>
-          <MessageBox>
-            <MoodTwoTone
-              style={{
-                height: "28px",
-                width: "28px",
-                color: "#dacece",
-                marginTop: "2px",
-                marginLeft: "4px",
-              }}
-            />
-            <Message placeholder="Message"></Message>
-            <Button>Send</Button>
-          </MessageBox>
+          {emojii && <Picker onEmojiClick={onEmojiClick} />}
+          {chatUser && (
+            <MessageBox>
+              <MoodTwoTone
+                style={{
+                  height: "28px",
+                  width: "28px",
+                  color: "#dacece",
+                  marginTop: "2px",
+                  marginLeft: "4px",
+                }}
+                onClick={() => setEmojii((prev) => !prev)}
+              />
+
+              <Message
+                placeholder="Message"
+                onChange={(e) => setMessage(e.target.value)}
+                value={message}
+              ></Message>
+
+              <Button onClick={sendMessage()}>Send</Button>
+            </MessageBox>
+          )}
+          {!chatUser && (
+            <NoChat>
+              <Head>Start a new conversation</Head>
+              <Con>This a world where wants to know about you !</Con>
+            </NoChat>
+          )}
         </Right>
       </Wrapper>
     </Container>

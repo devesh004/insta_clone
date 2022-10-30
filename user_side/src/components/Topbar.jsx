@@ -4,7 +4,7 @@ import {
   Search,
   Settings,
 } from "@material-ui/icons";
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Navbar,
   Container,
@@ -107,25 +107,44 @@ const Topbar = () => {
   const [modalShow, setModalShow] = useState(false);
   const [show, setShow] = useState(false);
   const [showUsers, setShowUsers] = useState([]);
+  const [searchedUser, setSearchedUser] = useState("");
 
   const logOut = () => {
     logoutUser(dispatch);
     navigate("/");
   };
 
-  const handleChange = async (e) => {
-    const input = e.target.value;
-    if (input.length === 0) {
+  // const handleChange = async () => {
+  //   const input = searchedUserRef.current.value;
+  //   console.log(input);
+  //   if (input.length === 0) {
+  //     setShowUsers([]);
+  //     setShow(false);
+  //     return;
+  //   }
+  //   setShow(true);
+  //   const myfun=()=>{
+  //     setTimeout(()=>{
+  //       const res = await searchUser(input);
+  //       setShowUsers(res);
+  //     },200)
+  //   }
+  //   return ()=>clearTimeout(myfun);
+  //   // searchedUserRef.current.value = "";
+  // };
+  useEffect(() => {
+    if (searchedUser.length === 0) {
       setShowUsers([]);
       setShow(false);
       return;
     }
     setShow(true);
-    console.log(input);
-    const res = await searchUser(input);
-    console.log(res);
-    setShowUsers(res);
-  };
+    const myfun = setTimeout(async () => {
+      const res = await searchUser(searchedUser);
+      setShowUsers(res);
+    }, 200);
+    return () => clearTimeout(myfun);
+  }, [searchedUser]);
 
   return (
     <>
@@ -202,7 +221,8 @@ const Topbar = () => {
                 className="me-2"
                 aria-label="Search"
                 style={{ fontWeight: " bolder ", letterSpacing: "0.8px" }}
-                onChange={handleChange}
+                onChange={(e) => setSearchedUser(e.target.value)}
+                value={searchedUser}
               />
               <Button
                 style={{

@@ -176,21 +176,24 @@ const EditProfile = () => {
                   onChange={handleChanges}
                 />
               </Form.Group>
-              <Form.Group
-                className="mb-3"
-                controlId="formBasicName"
-                style={{ fontFamily: "Verdana" }}
-              >
-                <Form.Label>Username</Form.Label>
-                <Form.Control
-                  required
-                  type="text"
-                  placeholder="Enter username"
-                  name="username"
-                  value={inputs.username}
-                  onChange={handleChanges}
-                />
-              </Form.Group>
+              {currUser.username !== "guest" && (
+                <Form.Group
+                  className="mb-3"
+                  controlId="formBasicName"
+                  style={{ fontFamily: "Verdana" }}
+                >
+                  <Form.Label>Username</Form.Label>
+                  <Form.Control
+                    required
+                    type="text"
+                    placeholder="Enter username"
+                    name="username"
+                    value={inputs.username}
+                    onChange={handleChanges}
+                  />
+                </Form.Group>
+              )}
+
               <Form.Group
                 className="mb-3"
                 controlId="formBasicEmail"

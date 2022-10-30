@@ -172,6 +172,7 @@ const MainPage = () => {
   const handleHide = () => {
     setPos(null);
   };
+
   const handleComment = (e, id) => {
     e.preventDefault();
     if (comment.length === 0) {

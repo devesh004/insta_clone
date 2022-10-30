@@ -46,6 +46,11 @@ const Login = () => {
     setValidated(true);
     loginUser(dispatch, { userPass, username });
   };
+  const loginAsGuest = () => {
+    const pass = "12345";
+    const usern = "guest";
+    loginUser(dispatch, { userPass: pass, username: usern });
+  };
 
   return (
     <Container>
@@ -93,6 +98,15 @@ const Login = () => {
             >
               Login
             </Button>
+            <Link to="/">
+              <Button
+                style={{ fontFamily: "Verdana", width: "100%" }}
+                variant="info"
+                onClick={loginAsGuest}
+              >
+                Login as guest
+              </Button>
+            </Link>
             <Link to="/register">
               <Button
                 style={{ fontFamily: "Verdana", width: "100%" }}

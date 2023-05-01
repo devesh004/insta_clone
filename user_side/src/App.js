@@ -16,6 +16,7 @@ import Error from "./flash/Error";
 function App() {
   const { currUser } = useSelector((state) => state.user);
   // const { accessToken } = useSelector((state) => state.user);
+  console.log(currUser);
   return (
     <>
       <Router>

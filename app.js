@@ -1,6 +1,7 @@
 if (process.env.NODE_ENV !== "production") {
   require("dotenv").config();
 }
+
 const express = require("express");
 const app = express();
 const methodOverride = require("method-override");
@@ -9,6 +10,7 @@ const AppError = require("./utils/AppError");
 const session = require("express-session");
 const flash = require("connect-flash");
 const cors = require("cors");
+
 const userRoutes = require("./routes/userRoutes");
 const postRoutes = require("./routes/postRoutes");
 const conRoutes = require("./routes/conversation");
@@ -25,6 +27,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
 const db = require("./utils/db");
+
 const { json } = require("express");
 db.connect(function (err) {
   if (err) throw err;

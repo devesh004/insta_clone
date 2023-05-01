@@ -33,7 +33,7 @@ const postSlice = createSlice({
       state.fetching = false;
       state.error = action.payload;
     },
-    onLogOut: (state) => {
+    cleanUp: (state) => {
       state.posts = [];
       state.fetching = false;
       state.error = null;
@@ -97,7 +97,7 @@ export const {
   addLikeStart,
   addLikeSuccess,
   addLikeFailure,
-  onLogOut,
+  cleanUp,
 } = postSlice.actions;
 
 export default postSlice.reducer;

@@ -235,7 +235,7 @@ const PostModal = (props) => {
                   <UserImage
                     src={
                       comment.profileImg === "null" || null
-                        ? "https://jpcprinting.co.uk/wp-content/uploads/2015/08/blank-profile.png"
+                        ? "https://w7.pngwing.com/pngs/340/946/png-transparent-avatar-user-computer-icons-software-developer-avatar-child-face-heroes-thumbnail.png"
                         : comment.profileImg
                     }
                   />

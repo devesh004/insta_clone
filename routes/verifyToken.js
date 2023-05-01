@@ -5,7 +5,7 @@ const verifyToken = (req, res, next) => {
   // console.log(authHeader);
   const token = authHeader.split(" ")[1];
   // console.log("TOKEN ", token);
-  if (token) {
+  if (token !== null) {
     jwt.verify(token, process.env.JWT_SECRET, (err, data) => {
       if (err) {
         console.log("TOKEN ERRORRRR    ", err);

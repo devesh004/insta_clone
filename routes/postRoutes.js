@@ -27,7 +27,7 @@ router.get("/allPosts/:id", verifyToken, (req, res) => {
       throw error;
     }
     const posts = results;
-    console.log(posts.length);
+    // console.log(posts.length);
     console.log(`${peg}th call of function`);
     if (posts.length === 0) {
       res.status(200).json(null);
@@ -53,7 +53,7 @@ router.post("/createPost/:id", verifyTokenAndAuth, (req, res, next) => {
       return;
     }
     console.log("Successfully uploaded!");
-    res.status(200).json({ msg: "Uploaded" });
+    res.status(200).json({ msg: "Post Uploaded" });
     return;
   });
 });
@@ -168,7 +168,8 @@ router.post("/likeComment", (req, res) => {
       let qu = `delete from likeComment where userId=${user_id} and commentId=${comment_id}`;
       con.query(qu, (err, resu, fields) => {
         if (err) {
-          console.log("ERROR IS HERE ", err);
+          console.log(err);
+          return;
         }
       });
       // console.log("DisLiked");

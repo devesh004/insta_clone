@@ -15,7 +15,7 @@ import { addComment, addLike, allPosts } from "../redux/apiCalls/postCalls";
 import { format } from "timeago.js";
 import { useState } from "react";
 import InfiniteScroll from "react-infinite-scroll-component";
-import { onLogOut } from "../redux/postReducers";
+import { cleanUp } from "../redux/postReducers";
 import LoaderSec from "../loaders/LoaderSec";
 import { Carousel } from "react-bootstrap";
 import PostModal from "./PostModal";
@@ -150,16 +150,18 @@ const MainPage = () => {
   const [page, setPage] = useState(1);
   const [pos, setPos] = useState(null);
   const [comment, setComment] = useState("");
+  const token = currUser.accessToken;
 
   useEffect(() => {
-    dispatch(onLogOut());
+    dispatch(cleanUp());
   }, []);
 
   useEffect(() => {
     const id = currUser.id;
-    console.log("ID IS ", id);
+    // console.log("ID IS ", id);
+    // console.log("TK  ", token);
     allPosts(dispatch, page, id);
-  }, [dispatch, page]);
+  }, [dispatch, page, currUser]);
 
   // if (posts[0]) {
   // console.log(JSON.parse(posts[0].image_urls));
@@ -184,7 +186,8 @@ const MainPage = () => {
     setComment("");
   };
   const handleLike = (post, e) => {
-    console.log("CLICKED");
+    // console.log("CLICKED");
+
     const user_id = currUser.id;
     const id = post.post_Id;
     const l = post.isLiked;
@@ -222,7 +225,7 @@ const MainPage = () => {
                   <UserImage
                     src={
                       post.profileImg === "null" || null
-                        ? "https://jpcprinting.co.uk/wp-content/uploads/2015/08/blank-profile.png"
+                        ? "https://w7.pngwing.com/pngs/340/946/png-transparent-avatar-user-computer-icons-software-developer-avatar-child-face-heroes-thumbnail.png"
                         : post.profileImg
                     }
                   />

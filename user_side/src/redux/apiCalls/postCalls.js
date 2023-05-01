@@ -32,7 +32,7 @@ export const createPost = async (dispatch, post, user_id) => {
 export const allPosts = async (dispatch, page, id) => {
   dispatch(getPostsStart());
   try {
-    console.log(id);
+    // console.log(id);
     const res = await userRequest.get(`/posts/allPosts/${id}/?page=${page}`);
     // console.log("DASDF", ...res.data);
     if (res.data) {

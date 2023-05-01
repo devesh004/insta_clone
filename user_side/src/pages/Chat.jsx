@@ -131,6 +131,7 @@ const Chats = styled.div`
   overflow-y: scroll;
   /* margin-right: -320px;
   padding-right: 320px; */
+  height: 80%;
   margin-right: -1px;
 `;
 const ChatBox = styled.div`
@@ -164,34 +165,36 @@ const ChatIs = styled.span`
 
 const MessageBox = styled.div`
   display: flex;
+  flex-direction: row;
   justify-content: space-between;
   margin: 15px;
   width: 95%;
-  border: 1px solid #888585;
+  height: 50px;
+  border: 1px solid #744771;
   border-radius: 10px;
-  height: 37px;
+  background-color: green;
+  overflow: auto;
 `;
 
 const Message = styled.textarea`
-  border: none;
-  background: none;
-  width: auto;
-  letter-spacing: 0.8px;
   width: 80%;
+  border: none;
+  letter-spacing: 0.8px;
   overflow: hidden;
   outline: none;
   height: auto;
   padding: 5px;
   resize: none;
-  color: white;
-  position: fixed;
-  top: 10px;
+  color: black;
 `;
 const Button = styled.button`
+  /* flex: 1; */
+  width: 20%;
   border: none;
   background: none;
   color: white;
   letter-spacing: 0.7px;
+  background-color: #adaaaa;
 `;
 
 const NoChat = styled.div`
@@ -343,8 +346,9 @@ const Chat = () => {
               <SideItem onClick={() => setChatUser(item)}>
                 <UserImage
                   src={
-                    item.profileImg ||
-                    "https://jpcprinting.co.uk/wp-content/uploads/2015/08/blank-profile.png"
+                    item.profileImg == null || "null"
+                      ? "https://w7.pngwing.com/pngs/340/946/png-transparent-avatar-user-computer-icons-software-developer-avatar-child-face-heroes-thumbnail.png"
+                      : item.profileImg
                   }
                 />
                 <ColName>{item.username}</ColName>
@@ -358,8 +362,9 @@ const Chat = () => {
               <ChatUser>
                 <Image
                   src={
-                    chatUser?.profileImg ||
-                    "https://jpcprinting.co.uk/wp-content/uploads/2015/08/blank-profile.png"
+                    chatUser?.profileImg == null || "null"
+                      ? "https://w7.pngwing.com/pngs/340/946/png-transparent-avatar-user-computer-icons-software-developer-avatar-child-face-heroes-thumbnail.png"
+                      : chatUser?.profileImg
                   }
                 />
                 <ChatUsername>{chatUser?.username}</ChatUsername>
@@ -380,27 +385,15 @@ const Chat = () => {
               )
             )}
           </Chats>
-          {emojii && <Picker onEmojiClick={onEmojiClick} />}
+          {/* {emojii && <Picker onEmojiClick={onEmojiClick} />} */}
           {chatUser && (
             <MessageBox>
-              <MoodTwoTone
-                style={{
-                  height: "28px",
-                  width: "28px",
-                  color: "#dacece",
-                  marginTop: "2px",
-                  marginLeft: "4px",
-                }}
-                onClick={() => setEmojii((prev) => !prev)}
-              />
-
               <Message
                 placeholder="Message"
-                onChange={(e) => setMessage(e.target.value)}
+                onChange={(event) => setMessage(event.target.value)}
                 value={message}
               ></Message>
-
-              <Button onClick={sendMessage()}>Send</Button>
+              <Button onClick={sendMessage}>Send</Button>
             </MessageBox>
           )}
           {!chatUser && (

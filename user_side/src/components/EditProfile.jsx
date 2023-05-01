@@ -67,7 +67,7 @@ const EditProfile = () => {
     });
   };
 
-  console.log(inputs);
+  // console.log(inputs);
 
   const submitHandler = (e) => {
     const form = e.currentTarget;
@@ -83,7 +83,9 @@ const EditProfile = () => {
       console.log(websites);
       const user = {
         ...others,
-        profileImg: currUser.profileImg,
+        profileImg:
+          currUser.profileImg ||
+          "https://w7.pngwing.com/pngs/340/946/png-transparent-avatar-user-computer-icons-software-developer-avatar-child-face-heroes-thumbnail.png",
         type: "edit",
         websites,
       };
@@ -154,8 +156,9 @@ const EditProfile = () => {
             <Sec>
               <ProfileImage
                 src={
-                  currUser.profileImg ||
-                  "https://images.unsplash.com/photo-1441786485319-5e0f0c092803?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1887&q=80"
+                  currUser.profileImg == null || "null"
+                    ? "https://w7.pngwing.com/pngs/340/946/png-transparent-avatar-user-computer-icons-software-developer-avatar-child-face-heroes-thumbnail.png"
+                    : currUser.profileImg
                 }
               />
               <Username>{currUser.username}</Username>

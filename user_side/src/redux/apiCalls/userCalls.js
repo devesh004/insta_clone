@@ -13,7 +13,7 @@ import {
   logoutfailure,
 } from "../userReducers";
 import { publicRequest, userRequest } from "../../requestMethod";
-import { onLogOut } from "../postReducers";
+import { cleanUp } from "../postReducers";
 
 export const logoutUser = async (dispatch) => {
   dispatch(logoutStart());
@@ -26,7 +26,7 @@ export const logoutUser = async (dispatch) => {
     // // );
     // localStorage.clear();
     console.log("client log out");
-    dispatch(onLogOut());
+    dispatch(cleanUp());
     dispatch(logoutSuccess());
   } catch (err) {
     console.log("User Register Err ", err);
@@ -58,8 +58,9 @@ export const loginUser = async (dispatch, user) => {
     // console.log("Logged In user ", res.data);
     dispatch(loginSuccess(res.data));
     setTimeout(() => {
+      console.log("client logout");
       logoutUser(dispatch);
-    }, 3600000);
+    }, 259200000);
   } catch (err) {
     const error = err.response.data.msg;
     dispatch(loginfailure(error));

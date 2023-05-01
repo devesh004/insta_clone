@@ -9,6 +9,7 @@ const {
   verifyTokenAndAuth,
   verifyTokenAndAdmin,
 } = require("./verifyToken");
+
 // const { updateQuery } = require("../middleware/user");
 
 router.post("/signUp", (req, res, next) => {
@@ -25,18 +26,15 @@ router.post("/signUp", (req, res, next) => {
   var q1 = "SELECT * FROM users WHERE email=? or username= ?";
   con.query(q1, [email, username], async (err, results, fields) => {
     if (err) {
-      console.log("E1  ", err);
+      console.log("signUp error  ", err);
       res.status(400).json({ msg: "Insufficient Data" });
-      next(new AppError("Insufficient Data", 400));
       return;
     }
     if (results.length > 0) {
-      console.log("E2  ");
       res
         .status(401)
         .json({ msg: "This username or email already has been taken !" });
     } else if (userPass !== conPassword) {
-      console.log("E3  ");
       res.status(401).json({ msg: "Password don't match" });
     } else {
       let isAdmin = false;
@@ -58,7 +56,7 @@ router.post("/signUp", (req, res, next) => {
       con.query(q, [val], (err, results, fields) => {
         if (err) {
           console.log("ERROR------", err);
-          res.status(404).json({ msg: "Please fill the data properly" });
+          res.status(500).json({ msg: "Please fill the data properly" });
           // next(new AppError("Please fill the data properly", 404));
           return;
         }
@@ -69,7 +67,6 @@ router.post("/signUp", (req, res, next) => {
             return;
           }
           let id = results[0].id;
-          // console.log(id);
           req.session.user = username;
           const { userPass, conPassword, ...others } = req.body;
           const accessToken = jwt.sign(
@@ -94,8 +91,8 @@ router.post("/login", (req, res, next) => {
     "select id,username,isAdmin,userPass as hashPass from users where username=?";
   con.query(q, [username], (err, results, fields) => {
     if (err) {
-      console.log("Login Error:-", err);
-      next(new AppError("Something went wrong", 400));
+      console.log("Login Error:- ", err);
+      next(new AppError("Something went wrong", 500));
       return;
     }
     if (results.length == 0) {
@@ -132,7 +129,7 @@ router.post("/login", (req, res, next) => {
                 expiresIn: "3d",
               }
             );
-            console.log("login");
+            // console.log("login", accessToken);
             const { userPass, ...others } = results[0];
             res.status(200).json({ ...others, accessToken });
           });
@@ -146,7 +143,7 @@ router.put("/userEdit/:id", (req, res) => {
   const userId = req.params.id;
   const user = req.body;
   const type = req.body.type;
-  console.log(user);
+  // console.log(user);
   let q;
   if (type === "edit") {
     if (user.username == "guest") {
@@ -213,7 +210,7 @@ router.put("/userEdit/:id", (req, res) => {
 router.post("/user/:id", verifyToken, (req, res, next) => {
   const { id } = req.params;
   const { currentId } = req.body;
-  console.log(id, " ", currentId);
+  // console.log(id, " ", currentId);
   let query = `select count(*) as followers from follows where followee_id=${id};
       select count(*) as following from follows where follower_id=${id};
       select * from users where id=${id};
@@ -257,7 +254,7 @@ router.post("/follow/:id", (req, res, next) => {
 
 router.get("/userFind/:input", (req, res) => {
   const input = req.params.input.toLowerCase();
-  console.log("INPUT ", input);
+  // console.log("INPUT ", input);
   const query = `select id,username,fullName,profileImg from users where username like "%${input}%" or fullName like "%${input}%"`;
   con.query(query, (err, results, fields) => {
     if (err) {
@@ -270,9 +267,7 @@ router.get("/userFind/:input", (req, res) => {
 
 router.post("/logout", (req, res) => {
   console.log("server LOGOUT");
-  if (req.headers.token) {
-    req.headers.token = "";
-  }
+  req.headers.token = null;
   res.status(200).json("Logged Out Successfully!");
 });
 

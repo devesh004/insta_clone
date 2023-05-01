@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Form, Button } from "react-bootstrap";
 import styled from "styled-components";
 import { mobile } from "../responsive";
+import { useSelector } from "react-redux";
 const Container = styled.div`
   flex: 2;
   margin: 20px 40px;
@@ -23,6 +24,7 @@ const ProfileImage = styled.img`
 const Username = styled.span``;
 const Websites = () => {
   const [inputs, setInputs] = useState({});
+  const { currUser } = useSelector((state) => state.user);
   const handleChanges = (e) => {
     setInputs((prev) => {
       return { ...prev, [e.target.name]: e.target.value };
@@ -40,7 +42,13 @@ const Websites = () => {
   return (
     <Container>
       <User>
-        <ProfileImage src="https://images.unsplash.com/photo-1441786485319-5e0f0c092803?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1887&q=80" />
+        <ProfileImage
+          src={
+            currUser.profileImg == null || "null"
+              ? "https://w7.pngwing.com/pngs/340/946/png-transparent-avatar-user-computer-icons-software-developer-avatar-child-face-heroes-thumbnail.png"
+              : currUser.profileImg
+          }
+        />
         <Username>Devesh Shakya</Username>
       </User>
       <Form onSubmit={submitHandler}>
